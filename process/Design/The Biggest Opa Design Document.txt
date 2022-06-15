@@ -1,0 +1,165 @@
+THE BIGGEST OPA / THE ZORBA GAME
+DESIGN DOCUMENT
+
+= PLAY STATE CODE DESIGN =
+
+* DanceState
+
+Controls overall dancing
+
+* UI
+
+Generates the UI for a specific player (depends on whether it's AI or player for location)
+Needs to track incoming notes to display?
+Needs to track incoming keypresses to score?
+Needs to track missed notes to score?
+
+update(incoming:Boolean) [each frame]
+
+(A UI object per player?
+ Who tracks alternation of turns? The state itself?)
+
+* Music
+
+Could play the two tracks and return true if there's an incoming note
+
+* AI
+
+Tracks statistics of relevance to AI performance
+Returns boolean on whether AI successfully executes a step whenever asked
+
+
+
+
+= Ludic Times =
+
+** Non-stop or alternating?
+
+Could have it be a dance off like banjo duel - you dance/they dance in alternation, and when one person fucks it up the other takes over the whole song for as long as possible…
+
+This would allow some respite and would let you watch the animations for a little while, and would up the sense of competing…
+
+Would require a slightly more interesting AI, and more interesting behaviours on fuckups and some kind of idle animation (clapping?)
+
+YES.
+
+** AI
+
+Possible that the AI barely matters because people will be too obsessed with their own input
+
+But if I'm making it alternating then might need to upgrade to a more interesting AI - chance of getting flustered or getting on a roll (a roll / on fire could be a  "real" thing in the game too of course… though is that getting too gimmicky and too much animation work?
+
+And there's the idea that probability of hitting a dance step reduces if there's a smaller (say sub-1s) time since the previous note.
+
+RUBBER BANDING
+
+** Scoring
+
+I guess I like the idea of a score just to complete the image of a competition and to hint at a fighting game (to go with the health bars). It wouldn't have to mean much, maybe just points per correct step plus streak-based multipliers. (Question of whether you could win despite not lasting the longest? Would that be okay? Yeah… I guess so… a better dancer, just not as long-lasting…)
+
+New people join the crowd when you're doing well?
+
+** Health
+
+Question of regeneration versus just one life to live. When it hits the bottom you collapse (so is it energy? and why would it reduce? maybe it's "confidence" or something). Or it could go up if you're successful or last for a while without fucking up?
+
+Regenerate (creeps up over time if you're not fucking up - like when resting)
+
+** Winning / Losing
+
+If there's points then it makes sense for the most points to win - i.e. you get the "biggest OPA" for dancing the best. Winning means going to the next round, losing means you have to try again.
+
+** Progression of challenges...
+
+How should the AI change as you go? Can be based roughly on Punch Out - e.g. starting with Gabby Jay who's a joke and would collapse after not long at all, and just going up. In simplistic terms it could be 40%, 60%, 80%, 100%… four levels.
+
+= Prototyping =
+
+What would I need to put together a technical prototype that would demonstrate the basics? I'd need the song + claptrack + displaying symbols on time with visual cue + some tracking of success/failure. Which is to say just a single game state and some assets and some code.
+
+= Code Structure =
+
+TheBiggestOpaPreloader (Preloader)
+	Maybe an increasingly big OPA? Or it just says "OPA!" when loaded?
+	Maybe a guy dancing while it loads (for a minimum time) then "OPA!" at the end
+	(Though that involves a lot of stuff to load itself - maybe just four frames though)
+	Standing on top of a loading bar
+	Click to play
+
+TheBiggestOpa (FlxGame)
+	Does nothing obviously, just starts it up
+
+TitleScreen (FlxState)
+	Would have a menu, basically: New Game, Continue, Stats?, Credits
+	Can just steal menu system from Safety Instructions probably
+
+DanceState
+	To actually run the dancing competition bit
+	A lot of logic of course.
+	Partly will just need to be built on the fly? I suspect it's as complex as all that really… just checking for matches and updating animations?
+
+Dancer
+	The basic animations, appearance, ability to perform a "move" (numbered? sequenced?)
+	Mostly just an animated FlxSprite with specific animation controls actually.
+
+Avatar
+	Suddenly wonder if this is even relevant or whether it would just be handled by DanceState? Not like the avatar does anything beyond animate at whim of DanceState...
+
+Opponent
+	Probably do need this extension because we'll need some kind of "AI" for how well the dancer dances - though it's possible we just set a flag for AI or no AI on the main Dancer class and eliminate this. All we need for the AI is some probability-based algorithm for whether the dancer successfully executes the next move, and some way to set the level from 0 - always fails - to 1 - always succeeds (the Boss).
+
+Cookie
+	Tracking current level, statistics, etc.
+
+Globals
+	Maybe, who knows
+
+Texts
+	Sure
+
+Assets
+	Of course
+
+= Graphical Assets =
+
+* Dance animations 
+(a suitable number of dance moves in a sprite animation, probably do the thing of recolouring the avatars - though perhaps just hair, skin, eyes and have them always wearing the same "traditional" clothes…)
+
+* Background(s) 
+(should it always be taking place at Ottawa's Greekfest '09? Or should there be maybe three or four locations like Street Fighter to indicate a kind of progression toward The Boss Fight)
+
+* Keypress symbols?
+Could also just do this with a font (assuming one of the retro fonts has arrow symbols? If not, then it's no big deal to just draw them obviously)
+
+* Menu screens
+
+* Title screen
+
+= Sound Assets =
+
+* Zorba song
+Obviously
+
+* Clap track
+That indicates the timing of the dance - unless there's some other magical way of doing this, which I kind of doubt, and the clap track at least *seemed* like it worked well - though there will be serious issues of latency and so on potentially which could fuck it all. -- looks like might be able to put the clap track on one "side" of the audio and the song on the other, which would allow guaranteed synch, but which would make it such a bit on headphones… might be funny to say "don't play this on your headphones?" Or could we run some transform that kills the clap channel but still access its data?
+
+Or could I write something to capture the millisecond timing of the clap track in numbers and then use that to trigger in the main app?
+
+* Sound effects
+Probably some other stuff like falling down, a big "OPA!" (though that might be text), cheering sound...
+
+= Brainstorm =
+
+Seems like the entire gameplay can take place in a single GameState easily enough, with other game states just to handle a menu system or something along those lines.
+
+Perhaps you're allowed to keep playing for as long as you keep winning against opponents? Maybe keep some stats on best moves, most defeated in a row, most moves in a row, etc.
+
+Mechanics of the dancing should be kept super simple - I think it'd be just that you have to hit the button in time (with some small variance allowed - would it be good to have the kind of "Good" "Great" "Perfect" stuff in there based on precision?). Perhaps you're allowed to miss some small number within a specific amount of time (some kind of "failure" meter? Or like the crowd reaction thing in Guitar Hero, except probably a lot harsher I think, so that it's a difficult game to play.)
+
+How to introduce the idea of the perfect machine? In many ways I like the idea that you inevitably face that one after three tires, because I don't want it to turn into some idea of people playing it more than once (after all it only has one song and the song is, at least partially, the entire point). To that extent it might be better if it were canned… so maybe not implied multiplayer after all? What would that add? It would be a bit more exciting if you thought they were real people, but I think it confuses the idea of the game.
+
+The control system - should it be extra crazy and have more than one thing at the samet time? Like you have to maintain a bass track as well as the treble?
+
+Design challenge: working out how to connect presses to the music such that it's appropriate and fair, I don't want it to feel like the game screwed you over because the moment to press the buttons wasn't right… but also don't want it 1:1 because then it will probably be too hard too fast
+
+Free style option somehow? Just the song and the ability to press buttons at random to dance without any judgement? Or just dancing on your own, non-competitively… Practice Mode…. in a practice room! With mirrors! Fuck yeah!
